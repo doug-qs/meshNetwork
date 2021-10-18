@@ -86,9 +86,6 @@ LDFLAGS+=-L$(JSONDIR) -lprotobuf -lrapidjson -lserial -lm -lrt -ldl -L$(GPIODIR)
 pi: LDFLAGS+=-lwiringPi
 pi: $(TGT)
 
-%.d:%.cpp
-	$(CPP) -MM $(CPPFLAGS) -MT $*.o $< -o $@
-
 commControl: commControl.o $(COMM_OBJS)
 	$(CPP) -o $@ $^ $(LDFLAGS)
 
