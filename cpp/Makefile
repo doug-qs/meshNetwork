@@ -71,7 +71,7 @@ TEST_SRC:=tests/radio_UT.cpp \
           #tests/nodeParams_UT.cpp \
 
 TGT:=commControl
-TGT_TYPE:=application
+TGTTYPE:=application
 
 SP:=./
 
