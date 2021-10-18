@@ -37,6 +37,8 @@ TEST_OBJS:=$(patsubst %.cpp, %.o, $(TEST_SRC))
 TEST_DEPS+=$(patsubst %.cpp, %.d, $(TEST_SRC))
 
 ## Targets
+.PHONY: all pi comm node clean $(SUBDIRS)
+
 all: $(SUBDIRS) comm $(TGT)
 
 comm: $(COMM_OBJS) commControl
