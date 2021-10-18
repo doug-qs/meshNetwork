@@ -1,4 +1,3 @@
-
 CC:=gcc
 CPP:=g++
 CXX:=g++
@@ -14,7 +13,7 @@ AR:=ar
 
 BASEDIR:=$(SP)
 LDFLAGS:=
-CFLAGS+=-O2 
+CFLAGS+=-O2
 CPPFLAGS+=$(CFLAGS) -g -Wall
 
 SYSTEM:=$(shell uname)
@@ -53,7 +52,6 @@ $(SUBDIRS):
 %.d:%.cpp
 	$(CPP) -MM $(CPPFLAGS) -MT $*.o $< -o $@
 
-
 ifeq ($(TGTTYPE), static_lib)
 TGT:=lib$(TGT).a
 LDFLAGS+=-lrt -ldl -lpthread
@@ -81,4 +79,3 @@ ifneq ($(MAKECMDGOALS),clean)
 -include $(COMM_DEPS)
 -include $(TEST_DEPS)
 endif
-

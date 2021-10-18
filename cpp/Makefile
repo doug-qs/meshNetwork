@@ -36,14 +36,13 @@ COMM_SRC:=comm/utilities.cpp \
      node/nodeInterface.pb.cpp \
      node/nodeController.cpp \
      node/nodeExecutive.cpp \
-     node/nodeControl.cpp 
+     node/nodeControl.cpp
      #node/pixhawk/pixhawkCmds.cpp
 
 NODE_SRC:=node/nodeCmds.cpp \
      node/nodeController.cpp \
      node/nodeExecutive.cpp \
      node/nodeControl.cpp
-    
 
 TEST_SRC:=tests/radio_UT.cpp \
           tests/nodeConfig_UT.cpp \
@@ -77,7 +76,6 @@ TGT_TYPE:=application
 SP:=./
 
 CFLAGS=-I./ -I./$(LIBDIR) -I$(GPIODIR) -I$(JSONDIR) -I$(GTESTINCDIR) #-DXPRINT_LOCATION #-DPRINT_DEBUG
-
 
 CPPFLAGS:=-std=c++11
 
