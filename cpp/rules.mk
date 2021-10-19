@@ -36,6 +36,10 @@ NODE_DEPS:=$(patsubst %.cpp, %.d, $(NODE_SRC))
 TEST_OBJS:=$(patsubst %.cpp, %.o, $(TEST_SRC))
 TEST_DEPS+=$(patsubst %.cpp, %.d, $(TEST_SRC))
 
+# Node pb.h and pb.cpp files
+INTERFACE_PBS:=$(patsubst %.proto, %.pb.h, $(INTERFACE_PROTO_SRC))
+INTERFACE_PBS+=$(patsubst %.proto, %.pb.cc, $(INTERFACE_PROTO_SRC))
+
 ## Targets
 .PHONY: all pi comm node clean $(SUBDIRS)
 
@@ -45,6 +49,14 @@ comm: $(COMM_OBJS) commControl
 
 node: $(SUBDIRS) $(COMM_OBJS) $(NODE_OBJS) $(TGT)
 
+node_pb: $(NODE_PBS)
+
+pb: $(INTERFACE_PBS)
+
+clean_pb:
+	rm -f $(INTERFACE_PBS)
+	rm -f node/*.pb.*
+
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
@@ -53,6 +65,15 @@ $(SUBDIRS):
 
 %.d:%.cpp
 	$(CPP) -MM $(CPPFLAGS) -MT $*.o $< -o $@
+
+%.pb.h %.pb.cc:%.proto
+	protoc -I=$(@D) --cpp_out=$(@D) $<
+
+node/%.pb.h:../interface/%.pb.h
+	cp $< $@
+
+node/%.pb.cpp:../interface/%.pb.cc
+	cp $< $@
 
 ifeq ($(TGTTYPE), static_lib)
 TGT:=lib$(TGT).a
@@ -72,12 +93,11 @@ endif
 endif
 endif
 
-clean: TARGET:=clean
 clean: $(SUBDIRS)
 	rm -f *.o $(COMM_OBJS) $(NODE_OBJS) $(COMM_DEPS) $(NODE_DEPS) $(TEST_OBJS) $(TEST_DEPS) $(TGT) $(TEST_DRIVER) \
           $(EXTRA_CLEAN) gtest* *.stackdump *~
 
-ifneq ($(MAKECMDGOALS),clean)
+ifeq ("",$(filter $(MAKECMDGOALS),clean clean_pb, pb, node_pb))
 -include $(COMM_DEPS)
 -include $(TEST_DEPS)
 endif

@@ -70,6 +70,12 @@ TEST_SRC:=tests/radio_UT.cpp \
           #tests/nodeConfig_UT.cpp \
           #tests/nodeParams_UT.cpp \
 
+INTERFACE_PROTO_SRC:=../interface/nodeInterface.proto \
+                     ../interface/nodeConfig.proto
+
+NODE_PBS:=node/nodeInterface.pb.h \
+          node/nodeInterface.pb.cpp
+
 TGT:=commControl
 TGTTYPE:=application
 
