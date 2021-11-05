@@ -13,6 +13,10 @@ AR:=ar
 
 BASEDIR:=$(SP)
 LDFLAGS:=
+ifdef serial_DIR
+CFLAGS+=-I$(serial_DIR)/include
+LDFLAGS+=-L$(serial_DIR)/lib
+endif
 CFLAGS+=-O2
 CPPFLAGS+=$(CFLAGS) -g -Wall
 
