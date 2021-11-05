@@ -87,15 +87,22 @@ CPPFLAGS:=-std=c++11
 
 include $(SP)rules.mk
 
-LDFLAGS+=-L$(JSONDIR) -lprotobuf -lrapidjson -lserial -lm -lrt -ldl -L$(GPIODIR) -lgpiowrapper -lcrypto -L$(GTESTLIBDIR) -lgtest -lpthread
+LOCAL_LIB_LD_FLAGS=-L$(JSONDIR) -lrapidjson -L$(GPIODIR) -lgpiowrapper -L$(GTESTLIBDIR) -lgtest
+LOCAL_LIBS=$(LIBDIR)/rapidjson/librapidjson.a $(LIBDIR)/GPIOWrapper/libgpiowrapper.a
+LDFLAGS+=-lprotobuf -lserial -lm -lrt -ldl  -lcrypto -lpthread $(LOCAL_LIB_LD_FLAGS)
 
 pi: LDFLAGS+=-lwiringPi
 pi: $(TGT)
 
-commControl: commControl.o $(COMM_OBJS)
+commControl: commControl.o $(COMM_OBJS) $(LOCAL_LIBS)
 	$(CPP) -o $@ $^ $(LDFLAGS)
 
-test: runTest.o $(TEST_OBJS) $(COMM_OBJS)
+test: runTest.o $(TEST_OBJS) $(COMM_OBJS) $(LOCAL_LIBS)
 	$(CPP) -o $@ $^ $(LDFLAGS)
+
+deps: $(LOCAL_LIBS) $(INTERFACE_PBS)
+
+clean_deps:
+	rm -f $(LOCAL_LIBS) $(INTERFACE_PBS)
 
 EXTRA_CLEAN+=$(TGT).o $(TGT).d

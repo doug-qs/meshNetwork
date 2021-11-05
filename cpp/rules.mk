@@ -79,6 +79,9 @@ node/%.pb.h:../interface/%.pb.h
 node/%.pb.cpp:../interface/%.pb.cc
 	cp $< $@
 
+$(LIBDIR)/%.a:
+	$(MAKE) -C $(@D)
+
 ifeq ($(TGTTYPE), static_lib)
 TGT:=lib$(TGT).a
 LDFLAGS+=-lrt -ldl -lpthread
