@@ -1,8 +1,4 @@
-LIBDIR:=./lib
-JSONDIR:=$(LIBDIR)/rapidjson
-GPIODIR:=$(LIBDIR)/GPIOWrapper
-GTESTINCDIR:=/usr/local/include
-GTESTLIBDIR:=/usr/local/lib
+COMM_CONTROL_SRC:=commControl
 
 COMM_SRC:=comm/utilities.cpp \
      comm/radio.cpp \
@@ -44,6 +40,8 @@ NODE_SRC:=node/nodeCmds.cpp \
      node/nodeExecutive.cpp \
      node/nodeControl.cpp
 
+TEST_DRIVER_SRC:=runTest.cpp
+
 TEST_SRC:=tests/radio_UT.cpp \
           tests/nodeConfig_UT.cpp \
           tests/cmdHeader_UT.cpp \
@@ -76,28 +74,57 @@ INTERFACE_PROTO_SRC:=../interface/nodeInterface.proto \
 NODE_PBS:=node/nodeInterface.pb.h \
           node/nodeInterface.pb.cpp
 
-TGT:=commControl
-TGTTYPE:=application
-
 SP:=./
 
-CFLAGS:=-I./ -I./$(LIBDIR) -I$(GPIODIR) -I$(JSONDIR) -I$(GTESTINCDIR) #-DXPRINT_LOCATION #-DPRINT_DEBUG
+LIBDIR:=./lib
+JSONDIR:=$(LIBDIR)/rapidjson
+GPIODIR:=$(LIBDIR)/GPIOWrapper
+GTESTINCDIR:=/usr/local/include
+GTESTLIBDIR:=/usr/local/lib
+
+TGT:=gpiowrapper
+TGTTYPE:=static_lib
+SRC:=$(DEFAULT_SRC) $(BBB_SRC) $(RASPI_SRC)
+TEST_SRC:=
+CLEANFILES:=
+SUBDIRS:=
+CFLAGS:=
+CPPFLAGS:=
+LDFLAGS:=
+
+TGT:=commControl
+TGTTYPE:=application
+SRC:=$(COMM_CONTROL_SRC) $(COMM_SRC) $(NODE_SRC) 
+CLEANFILES:=$(DEFAULT_SRC) $(BBB_OBJS) $(RASPI_OBJS)
+
+SERIAL_CFLAGS:=
+ifdef serial_DIR
+SERIAL_CFLAGS+=-I$(serial_DIR)/include
+endif
+CFLAGS:=$(SERIAL_CFLAGS) -I. -I$(LIBDIR) -I$(GPIODIR) -I$(JSONDIR) -I$(GTESTINCDIR) #-DXPRINT_LOCATION #-DPRINT_DEBUG
+
+CPPFLAGS:=
+
+LDFLAGS:=
+LOCAL_LIB_LD_FLAGS=-L$(JSONDIR) -lrapidjson -L$(GPIODIR) -lgpiowrapper -L$(GTESTLIBDIR) -lgtest
+LOCAL_LIBS=$(JSONDIR)/librapidjson.a $(GPIODIR)/libgpiowrapper.a
+SERIAL_LD_FLAGS:=
+ifdef serial_DIR
+SERIAL_LD_FLAGS:=-L$(serial_DIR)/lib
+endif
+SERIAL_LD_FLAGS+=-lserial
+LDFLAGS+=$(LOCAL_LIB_LD_FLAGS) -lprotobuf $(SERIAL_LD_FLAGS) -lm -lcrypto  -lstdc++
+
+SUBDIRS:=$(JSONDIR) $(GPIODIR)
+
 
 CPPFLAGS:=-std=c++11
 
-include $(SP)rules.mk
 
-LOCAL_LIB_LD_FLAGS=-L$(JSONDIR) -lrapidjson -L$(GPIODIR) -lgpiowrapper -L$(GTESTLIBDIR) -lgtest
-LOCAL_LIBS=$(LIBDIR)/rapidjson/librapidjson.a $(LIBDIR)/GPIOWrapper/libgpiowrapper.a
-LDFLAGS+=-lprotobuf -lserial -lm -lrt -ldl  -lcrypto -lpthread $(LOCAL_LIB_LD_FLAGS)
 
-pi: LDFLAGS+=-lwiringPi
-pi: $(TGT)
+pi: LDFLAGS+=-lwiringPi $(TGT)
 
-commControl: commControl.o $(COMM_OBJS) $(LOCAL_LIBS)
-	$(CPP) -o $@ $^ $(LDFLAGS)
-
-test: runTest.o $(TEST_OBJS) $(COMM_OBJS) $(LOCAL_LIBS)
+commControl: SRC:=$(COMM_CONTROL_SRC) SRC+=$(COMM_OBJS) $(LOCAL_LIBS)
 	$(CPP) -o $@ $^ $(LDFLAGS)
 
 deps: $(LOCAL_LIBS) $(INTERFACE_PBS)
@@ -105,4 +132,22 @@ deps: $(LOCAL_LIBS) $(INTERFACE_PBS)
 clean_deps:
 	rm -f $(LOCAL_LIBS) $(INTERFACE_PBS)
 
-EXTRA_CLEAN+=$(TGT).o $(TGT).d
+.PHONY comm
+comm: $(COMM_OBJS) $(TGT)
+
+.PHONY node
+node: $(SUBDIRS) $(AR_OBJS) $(TGT)
+
+.PHONY node_pb
+node_pb: $(NODE_PBS)
+
+.PHONY pb
+pb: $(INTERFACE_PBS)
+
+.PHONY clean_pb
+clean_pb:
+	rm -f $(INTERFACE_PBS)
+	rm -f node/*.pb.*
+
+
+include $(SP)rules.mk

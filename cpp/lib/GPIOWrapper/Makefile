@@ -1,22 +1,38 @@
-BBB_SRC:=GPIOWrapper_BBB.cpp \
-         BeagleBoneBlack-GPIO/GPIO/GPIOManager.cpp \
-         BeagleBoneBlack-GPIO/GPIO/GPIOConst.cpp
+DEFAULT_SRC:=GPIOWrapper.cpp
 
-BBB_OBJS:=$(patsubst %.cpp, %.o, $(BBB_SRC))
-BBB_OBJS:=$(BBB_OBJS:%.c=%.o)
+BBB_SRC:=GPIOWrapper_BBB.cpp \
+         BeagleBoneBlack-GPIO/GPIO/manager.cpp \
+         BeagleBoneBlack-GPIO/GPIO/const.cpp
 
 RASPI_SRC:=GPIOWrapper_PI.cpp 
-RASPI_OBJS:=$(patsubst %.cpp, %.o, $(RASPI_SRC))
-RASPI_OBJS:=$(RASPI_OBJS:%.c=%.o)
 
-default: GPIOWrapper.o
-	ar rcs libgpiowrapper.a GPIOWrapper.o
+TGT:=gpiowrapper
+TGT_TYPE:=static_lib
+SRC:=$(DEFAULT_SRC) $(BBB_SRC) $(RASPI_SRC)
+TGT_DEPS:=
+TEST_DRIVER_SRC:=
+TEST_SRC:=
+CLEANFILES:=
+SUBDIRS:=
+CFLAGS:=-I.
+CPPFLAGS:=
+LDFLAGS:=
 
-bbb: $(BBB_OBJS)
-	ar rcs libgpiowrapper.a $(BBB_OBJS)
+include ../../rules.mk
 
-pi: $(RASPI_OBJS)
-	ar rcs libgpiowrapper.a $(RASPI_OBJS)
+# all is defined in rules.mk
+.PHONY: all
+all: SRC:=$(DEFAULT_SRC)
+all: $(TGT)
 
-clean:
-	rm -f *.o BeagleBoneBlack-GPIO/GPIO/*.o *.a
+.PHONY: default
+default: SRC:=$(DEFAULT_SRC)
+default: $(TGT)
+
+.PHONY: bbb
+bbb: SRC:=$(BBB_SRC)
+bbb: $(TGT)
+
+.PHONY: pi
+pi: SRC:=$(RASPI_SRC)
+pi: $(TGT)

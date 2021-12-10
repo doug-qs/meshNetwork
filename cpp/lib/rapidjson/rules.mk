@@ -1,11 +1,10 @@
+include basic.mk
 
 CC:=gcc
 CPP:=g++
 LD:=g++
 AR:=ar
 
-BASEDIR:=$(SP)
-LDFLAGS:=
 CFLAGS+=-O2
 CPPFLAGS+=$(CFLAGS) -g -Wall
 
@@ -17,19 +16,19 @@ SYS_LINUX:=Linux
 SYS_DARWIN:=Darwin
 
 OBJS:=$(patsubst %.cpp, %.o, $(SRC))
-DEPS:=$(patsubst %.cpp, %.d, $(SRC))
 OBJS:=$(OBJS:%.c=%.o)
+DEPS:=$(patsubst %.cpp, %.d, $(SRC))
 DEPS:=$(DEPS:%.c=%.d)
 
 TEST_OBJS:=$(patsubst %.cpp, %.o, $(TEST_SRC))
 TEST_DEPS+=$(patsubst %.cpp, %.d, $(TEST_SRC))
 
-ifeq ($(TGTTYPE), static_lib)
+ifeq ($(TGT_TYPE), static_lib)
 TGT:=lib$(TGT).a
 LDFLAGS+=-lrt -ldl -lpthread
 endif
 
-ifeq ($(TGTTYPE), application)
+ifeq ($(TGT_TYPE), application)
 ifeq ($(SYSTEM),$(SYS_CYGWIN))
 TGT:=$(TGT).exe
 else
@@ -44,9 +43,10 @@ endif
 
 .PHONY:all test clean $(SUBDIRS)
 
-all: TARGET:=all
+.PHONY ALL
 all: $(SUBDIRS) $(OBJS) $(TGT)
 
+.PHONY $(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
@@ -56,16 +56,16 @@ $(SUBDIRS):
 %.d:%.cpp
 	$(CPP) -MM $(CPPFLAGS) -MT $*.o $< -o $@
 
-GTEST:=../lib/gtest
+GTEST_DIR:=../lib/gtest
 TEST_DRIVER:=run_test
 test: TARGET:=test
-test: CPPFLAGS+=-DASSERT_THROWS_EXCEPTION -I$(GTEST)/include -L$(GTEST)/cmake \
-                -lgtest_main -lgtest
+test: CPPFLAGS+=-DASSERT_THROWS_EXCEPTION -I$(GTEST_DIR)/include \
+                -L$(GTEST_DIR)/cmake -lgtest_main -lgtest
 test: $(SUBDIRS) $(TEST_DRIVER)
 
 $(TEST_DRIVER): $(TEST_OBJS) $(OBJS)
 ifdef TEST_OBJS
-	$(CPP) -o $@ $(CPPFLAGS) $(TEST_OBJS) $(OBJS) $(TESTDEPS) $(LDFLAGS)
+	$(CPP) -o $@ $(CPPFLAGS) $(TEST_OBJS) $(OBJS) $(TEST_DEPS) $(LDFLAGS)
 endif
 TEST_DRIVER:=run_test
 

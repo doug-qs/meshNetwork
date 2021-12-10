@@ -1,0 +1,3 @@
+[submodule "cpp/lib/GPIOWrapper/BeagleBoneBlack-GPIO"]
+	path = cpp/lib/GPIOWrapper/BeagleBoneBlack-GPIO
+	url = https://github.com/mkaczanowski/BeagleBoneBlack-GPIO
